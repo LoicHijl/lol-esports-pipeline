@@ -1,9 +1,20 @@
 import json
 import os
+import sys
 from mwrogue.esports_client import EsportsClient
 from mwrogue.auth_credentials import AuthCredentials
 
-credentials = AuthCredentials(user_file = "me")
+wiki_user = os.getenv("WIKI_USER")
+wiki_pass = os.getenv("WIKI_PASS")
+
+credentials = AuthCredentials(
+    username = wiki_user,
+    password = wiki_pass
+)
+
+if not wiki_pass or not wiki_user:
+    print("ERROR: Missing environment variables! Please set WIKI_USER and WIKI_PASS")
+    sys.exit(1)
 
 def fetch_tournament_data(tournament_name):
     # Connect to the Leaguepedia MediaWiki instance
