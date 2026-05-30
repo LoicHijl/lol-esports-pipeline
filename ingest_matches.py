@@ -4,16 +4,20 @@ import sys
 from mwrogue.esports_client import EsportsClient
 from mwrogue.auth_credentials import AuthCredentials
 
-wiki_user = os.getenv("WIKI_USER")
-wiki_pass = os.getenv("WIKI_PASS")
+WIKI_USER = os.getenv("WIKI_USER")
+WIKI_PASS = os.getenv("WIKI_PASS")
+AWS_KEY = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_REGION = os.getenv("AWS_DEFAULT_REGION")
+
 
 credentials = AuthCredentials(
-    username = wiki_user,
-    password = wiki_pass
+    username = WIKI_USER,
+    password = WIKI_PASS
 )
 
-if not wiki_pass or not wiki_user:
-    print("ERROR: Missing environment variables! Please set WIKI_USER and WIKI_PASS")
+if not all([WIKI_PASS, WIKI_USER, AWS_KEY, AWS_SECRET,AWS_REGION]):
+    print("ERROR: Missing environment variables!")
     sys.exit(1)
 
 def fetch_tournament_data(tournament_name):

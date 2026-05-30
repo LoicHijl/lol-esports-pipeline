@@ -1,5 +1,5 @@
 # Parent image is a lightweight python version
-FROM python:3.14-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 
