@@ -23,13 +23,14 @@ if not all([WIKI_PASS, WIKI_USER, AWS_KEY, AWS_SECRET,AWS_REGION]):
     print("ERROR: Missing environment variables!")
     sys.exit(1)
 
-def fetch_tournament_data(tournament_name, site = None):
+def fetch_tournament_data(site = None):
     # Fallback condition if no site instance was passed
     if site is None:
         print("No active session passed in. Creating a new EsportsClient connection.....")
         # Connect to the Leaguepedia MediaWiki instance
         site = EsportsClient("lol", credentials=credentials)
 
+    tournament_name = "2025 Season World Championship"
     # Query the Cargo database
     response = fetch_cargo_data(
         tables = "ScoreboardGames=SG, Tournaments=T",
@@ -68,7 +69,7 @@ def fetch_cargo_data(tables, fields, condition = None, site = None, **kwargs):
 
     return response
 
-def save_raw_data(data, filename = "raw_msi_games.json"):
+def save_raw_data(data, filename = "raw_msi_games2.json"):
     os.makedirs("data/raw", exist_ok=True)
     filepath = os.path.join("data/raw", filename)
 
@@ -95,18 +96,45 @@ def upload_to_s3(data, bucket_name = "lol-esports-raw-data-688600819773-eu-centr
     )
     print("The data has landed in the cloud!")
 
+def main():
+    # Start our session
+    site = EsportsClient("lol", credentials=credentials)
 
+    #Setup the filters to split the years
+    filter25 = "DateTime_UTC >= '2025-01-18 08:36:01' AND DateTime_UTC < '2026-01-01 00:00:00'"
+    filter26 = "DateTime_UTC >= '2026-01-01 00:00:00'"
+
+    # Run 1: Fetch games data, split into sets per year
+    data25 = fetch_cargo_data(
+        site = site,
+        tables = "ScoreboardGames",
+        fields = "GameId, MatchId, " \
+        "Tournament, Team1, Team2, WinTeam, LossTeam, " \
+        "DateTime_UTC, Gamelength_Number, Team1Bans, Team2Bans, " \
+        "Team1Picks, Team2Picks, Team1Players, Team2Players, " \
+        "Team1Gold, Team2Gold, Team1Kills, Team2Kills, Patch, ",
+        condition = filter25,
+        order_by = "DateTime_UTC",
+        limit=100
+    )
+
+    if data25:
+        print(data25[-1]["DateTime UTC"])
+        save_raw_data(data=data25)
+    else:
+        print("No data was found, please check the query")
+
+    save_raw_data(data=data25)
 
 if __name__ == "__main__":
-    target_tournament = "2025 Season World Championship"
-
     try:
-        raw_games = fetch_tournament_data(target_tournament)
-        if raw_games:
-            save_raw_data(raw_games)
-            # upload_to_s3(raw_games)
-        else:
-            print("No games found")
+        main()
+        # raw_games = fetch_tournament_data()
+        # if raw_games:
+        #     save_raw_data(raw_games)
+        #     # upload_to_s3(raw_games)
+        # else:
+        #     print("No games found")
     except Exception as e:
         print(f"An error occured: {e}")
 
