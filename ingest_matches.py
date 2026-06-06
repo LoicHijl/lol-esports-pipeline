@@ -121,7 +121,7 @@ def fetch_dataset(games = True):
         return fetch_dataset_players()
 
 # Fetch a dataset for players (using default fields)
-def fetch_dataset_players(condition = "DateTime_UTC >= '2026-01-01 00:00:00'", condition_end = ""):
+def fetch_dataset_players(save_file_name = "raw_players_26", condition = "DateTime_UTC >= '2026-01-01 00:00:00'", condition_end = "", save_freq = 5):
     # Start our session
     site = EsportsClient("lol", credentials=credentials)
 
@@ -140,9 +140,60 @@ def fetch_dataset_players(condition = "DateTime_UTC >= '2026-01-01 00:00:00'", c
         order_by = "DateTime_UTC",
         limit=100
     )
+    
+    # Initialize counter and data-holder
+    pass_no = 0
+    prev_data = None
+
+    # Loop over all data
+    while datas:
+        # Create filename for intermediate storage
+        filename = f"{save_file_name}_{pass_no}.json"
+
+        # Increment counter
+        pass_no += 1
+
+        # Start new interval from last UTC timestamp
+        dt_new = datas[-1]["DateTime UTC"]
+        new_condition = f"DateTime_UTC > '{dt_new}'{condition_end}"
+
+        # Save data
+        if prev_data:
+            # Save once every few passes
+            if pass_no % save_freq == 0:
+                prev_data = prev_data + datas
+                
+                save_raw_data(data=prev_data, filename=filename)
+        else:
+            print("Creating prev_data")
+            prev_data = datas
+            save_raw_data(data=datas, filename=filename)
+
+        # Set random timeout to not overload API
+        to = random.randint(5,60)
+        print(f"[{pass_no}]: Chosen to wait {to} seconds...")
+        time.sleep(to)
+
+        # Fetch new data with new filter
+        datas = fetch_cargo_data(
+            site = site,
+            tables = "ScoreboardPlayers",
+            fields = "GameId, MatchId, " \
+            "Name, Champion, Kills, Deaths, Assists, " \
+            "SummonerSpells, Gold, CS, DamageToChampions, " \
+            "Items, Team, DateTime_UTC, Role, " \
+            "Role_Number, Side",
+            condition = new_condition,
+            order_by = "DateTime_UTC",
+            limit=100
+        )
+
+    # Once no more new data is added, we are done
+    print("Done with the loop")
+    return prev_data
 
 # Fetch a dataset for games (using default fields)
-# Optional filter_end: Remember leading whitespace and " AND DateTime_UTC < '2026-01-01 00:00:00'"
+# Optional condition_end: Remember leading whitespace and " AND DateTime_UTC < '2026-01-01 00:00:00'"
 def fetch_dataset_games(save_file_name = "raw_games_26", condition = "DateTime_UTC >= '2026-01-01 00:00:00'", condition_end = "", save_freq = 5):
     # Start our session
     site = EsportsClient("lol", credentials=credentials)
@@ -238,8 +289,6 @@ def main():
     # fetch_dataset()
     # do_uploads()
     pass
-
-
 
 if __name__ == "__main__":
     try:
