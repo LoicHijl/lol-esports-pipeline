@@ -274,12 +274,12 @@ def do_uploads():
         games_str = f"{games_tag}{x}"
         json_str = f"{games_str}.json"
 
-        players_str = f"{players_tag}{x}"
-        json_str = f"{players_str}.json"
-
         data = load_data(json_str)
         upload_to_s3(data, file_tag = games_str)
         print(f"Uploaded {games_str} successfully")
+
+        players_str = f"{players_tag}{x}"
+        json_str = f"{players_str}.json"
 
         data = load_data(json_str)
         upload_to_s3(data, file_tag = players_str)
@@ -287,7 +287,7 @@ def do_uploads():
 
 def main():
     # fetch_dataset()
-    # do_uploads()
+    do_uploads()
     pass
 
 if __name__ == "__main__":
