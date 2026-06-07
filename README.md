@@ -52,11 +52,11 @@ Currently the plan is to use AWS S3, which can be simulated locally. DuckDB will
 
 ## 3. Tech Stack & Justification
 
-| Technology | Role in Project | Justification & Alternatives Considered |
+| Technology | Role in Project | Justification |
 | :--- | :--- | :--- |
 | **Python** | Main programming language; Data ingestion | Handles requests to the Fandom Wiki API, endpoint pagination, and intial data extraction tasks |
-| **Apache Spark (PySpark)** | Heavy Compute & Processing | Chosen to efficiently flatten the heavily nested JSON formats returned by the esports wiki, enforce strict schemas and drop duplicates |
-| **Local Parquet Files | Object Storage | ToDo |
+| **Apache Spark (PySpark)** | Heavy Compute & Processing | Chosen to efficiently flatten the JSON formats returned by the esports wiki, enforce strict schemas and drop duplicates |
+| **Local Parquet Files** | Object Storage | ToDo |
 | **DuckDB** | Data warehouse backend | ToDo |
 | **dbt Core** | SQL Transformation | ToDo |
 | **Streamlit** | Visualization UI | ToDo|
