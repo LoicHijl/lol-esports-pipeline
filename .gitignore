@@ -2,3 +2,4 @@ data/*
 .env
 .dockerignore
 test.py
+*.ipynb
